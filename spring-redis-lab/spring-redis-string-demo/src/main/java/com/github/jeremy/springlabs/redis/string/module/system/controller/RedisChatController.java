@@ -120,7 +120,7 @@ public class RedisChatController {
         }
 
         log.info("获取聊天室 {} 的消息，共 {} 条", roomId, messages.size());
-        return Result.success(messages);
+        return Result.success(messages); 
     }
 
     /**
