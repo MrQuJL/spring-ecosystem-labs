@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WebSocket 聊天室测试</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; margin: 16px; color: #111; }
+    .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+    .card { border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; margin: 12px 0; }
+    label { font-size: 12px; color: #374151; display: block; margin-bottom: 6px; }
+    input, textarea { border: 1px solid #d1d5db; border-radius: 6px; padding: 8px; font-size: 14px; }
+    input { width: 240px; }
+    textarea { width: 100%; height: 200px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+    button { border: 1px solid #111827; background: #111827; color: #fff; border-radius: 6px; padding: 8px 12px; cursor: pointer; }
+    button.secondary { background: #fff; color: #111827; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .status { font-size: 12px; padding: 4px 8px; border-radius: 999px; border: 1px solid #d1d5db; }
+    .ok { border-color: #10b981; color: #065f46; }
+    .bad { border-color: #ef4444; color: #7f1d1d; }
+    .hint { color: #6b7280; font-size: 12px; }
+  </style>
+  <script src="https://unpkg.com/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
+</head>
+<body>
+  <h2>WebSocket 聊天室测试</h2>
+  <div class="hint">
+    连接端点：/ws（STOMP over WebSocket），订阅：/topic/chat/room/{roomId}，发送：/app/chat/room/{roomId}
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <div>
+        <label>Room ID</label>
+        <input id="roomId" value="room1" />
+      </div>
+      <div>
+        <label>用户名</label>
+        <input id="from" value="alice" />
+      </div>
+      <div>
+        <label>Token (Auth)</label>
+        <input id="token" value="valid-token-123456" placeholder="Bearer ..." />
+      </div>
+      <div>
+        <label>WebSocket URL</label>
+        <input id="wsUrl" />
+      </div>
+      <div>
+        <label>状态</label>
+        <span id="status" class="status bad">未连接</span>
+      </div>
+    </div>
+    <div class="row" style="margin-top: 12px;">
+      <button id="connectBtn">连接</button>
+      <button id="disconnectBtn" class="secondary" disabled>断开</button>
+      <button id="subscribeBtn" class="secondary" disabled>订阅房间</button>
+      <button id="clearBtn" class="secondary">清空日志</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <div style="flex: 1; min-width: 280px;">
+        <label>消息内容</label>
+        <input id="content" value="hello" style="width: 100%;" />
+      </div>
+    </div>
+    <div class="row" style="margin-top: 12px;">
+      <button id="sendBtn" disabled>发送（STOMP）</button>
+      <button id="sendHttpBtn" class="secondary">发送（HTTP→Redis→WS）</button>
+    </div>
+    <div class="hint" style="margin-top: 8px;">
+      HTTP 发送会调用 /api/chat-ws-test/publish 接口（用于验证 Redis→WebSocket 转发链路）。
+    </div>
+  </div>
+
+  <div class="card">
+    <label>日志</label>
+    <textarea id="log" readonly></textarea>
+  </div>
+
+  <script>
+    const wsUrlInput = document.getElementById('wsUrl')
+    const roomIdInput = document.getElementById('roomId')
+    const fromInput = document.getElementById('from')
+    const tokenInput = document.getElementById('token')
+    const contentInput = document.getElementById('content')
+    const logArea = document.getElementById('log')
+    const statusEl = document.getElementById('status')
+
+    const connectBtn = document.getElementById('connectBtn')
+    const disconnectBtn = document.getElementById('disconnectBtn')
+    const subscribeBtn = document.getElementById('subscribeBtn')
+    const sendBtn = document.getElementById('sendBtn')
+    const sendHttpBtn = document.getElementById('sendHttpBtn')
+    const clearBtn = document.getElementById('clearBtn')
+
+    const basePath = location.pathname.replace(/\/[^/]*$/, '')
+    wsUrlInput.value = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + basePath + '/ws'
+
+    let client = null
+    let subscription = null
+
+    function appendLog(line) {
+      const ts = new Date().toISOString()
+      logArea.value += `[${ts}] ${line}\n`
+      logArea.scrollTop = logArea.scrollHeight
+    }
+
+    function setStatus(connected) {
+      if (connected) {
+        statusEl.textContent = '已连接'
+        statusEl.classList.remove('bad')
+        statusEl.classList.add('ok')
+      } else {
+        statusEl.textContent = '未连接'
+        statusEl.classList.remove('ok')
+        statusEl.classList.add('bad')
+      }
+    }
+
+    function currentRoomTopic() {
+      return `/topic/chat/room/${roomIdInput.value}`
+    }
+
+    function currentRoomSendDest() {
+      return `/app/chat/room/${roomIdInput.value}`
+    }
+
+    function cleanupSubscription() {
+      if (subscription) {
+        try { subscription.unsubscribe() } catch (e) {}
+        subscription = null
+      }
+    }
+
+    connectBtn.onclick = () => {
+      if (client && client.active) {
+        appendLog('连接任务进行中，无需重复点击')
+        return
+      }
+      setStatus(false)
+      cleanupSubscription()
+
+      client = new StompJs.Client({
+        brokerURL: wsUrlInput.value,
+        connectHeaders: {
+          'Authorization': tokenInput.value
+        },
+        reconnectDelay: 2000,
+        heartbeatIncoming: 10000,
+        heartbeatOutgoing: 10000,
+        onConnect: () => {
+          appendLog('STOMP 已连接')
+          setStatus(true)
+          disconnectBtn.disabled = false
+          subscribeBtn.disabled = false
+          sendBtn.disabled = false
+        },
+        onStompError: (frame) => {
+          appendLog(`STOMP ERROR: ${frame.headers['message'] || ''} ${frame.body || ''}`)
+          // 如果是鉴权失败等严重错误，停止自动重连
+          if (client.active) {
+            client.deactivate()
+            appendLog('已停止自动重连')
+          }
+        },
+        onWebSocketError: (evt) => {
+          appendLog(`WS ERROR: ${evt.message || 'websocket error'}`)
+          if (client.active) {
+            client.deactivate()
+            appendLog('已停止自动重连')
+          }
+        },
+        onWebSocketClose: () => {
+          appendLog('WS 连接已关闭')
+          setStatus(false)
+          disconnectBtn.disabled = true
+          subscribeBtn.disabled = true
+          sendBtn.disabled = true
+          cleanupSubscription()
+        }
+      })
+
+      appendLog(`连接中: ${wsUrlInput.value}`)
+      client.activate()
+    }
+
+    disconnectBtn.onclick = () => {
+      if (!client) return
+      cleanupSubscription()
+      client.deactivate()
+      appendLog('已请求断开连接')
+    }
+
+    subscribeBtn.onclick = () => {
+      if (!client || !client.connected) {
+        appendLog('未连接，无法订阅')
+        return
+      }
+      cleanupSubscription()
+      const topic = currentRoomTopic()
+      subscription = client.subscribe(topic, (message) => {
+        appendLog(`RECV ${topic}: ${message.body}`)
+      })
+      appendLog(`已订阅: ${topic}`)
+    }
+
+    sendBtn.onclick = () => {
+      if (!client || !client.connected) {
+        appendLog('未连接，无法发送')
+        return
+      }
+      const dest = currentRoomSendDest()
+      const payload = {
+        from: fromInput.value,
+        content: contentInput.value
+      }
+      client.publish({ destination: dest, body: JSON.stringify(payload) })
+      appendLog(`SEND ${dest}: ${JSON.stringify(payload)}`)
+    }
+
+    sendHttpBtn.onclick = async () => {
+      const roomId = roomIdInput.value
+      const from = fromInput.value
+      const content = contentInput.value
+      const url = `${basePath}/api/chat-ws-test/publish?roomId=${encodeURIComponent(roomId)}&from=${encodeURIComponent(from)}&content=${encodeURIComponent(content)}`
+      appendLog(`HTTP POST ${url}`)
+      try {
+        const resp = await fetch(url, { method: 'POST' })
+        const json = await resp.json()
+        appendLog(`HTTP RESP: ${JSON.stringify(json)}`)
+      } catch (e) {
+        appendLog(`HTTP ERROR: ${e.message || e}`)
+      }
+    }
+
+    clearBtn.onclick = () => {
+      logArea.value = ''
+    }
+  </script>
+</body>
+</html>
