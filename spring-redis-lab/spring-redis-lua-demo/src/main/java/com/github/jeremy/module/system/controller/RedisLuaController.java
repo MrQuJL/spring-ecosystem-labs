@@ -69,4 +69,32 @@ public class RedisLuaController {
             return Result.fail("库存不足，扣减失败");
         }
     }
+
+    @ApiOperation("Java 端不安全扣减（演示并发问题）")
+    @PostMapping("/deduct-stock-unsafe")
+    public Result<String> deductStockUnsafe(@ApiParam(value = "库存Key", required = true, example = "product:101:stock")
+                                           @RequestParam String key,
+                                           @ApiParam(value = "扣减数量", required = true, example = "1")
+                                           @RequestParam Integer amount) {
+        // 1. 从 Redis 获取当前库存（Java 读）
+        String currentStockStr = stringRedisTemplate.opsForValue().get(key);
+        int currentStock = currentStockStr == null ? 0 : Integer.parseInt(currentStockStr);
+
+        // 2. 在 Java 代码中判断（Java 判断）
+        if (currentStock >= amount) {
+            // 模拟业务耗时，让并发问题更容易出现
+            try { Thread.sleep(100); } catch (InterruptedException e) {}
+
+            // 3. 在 Java 中计算新库存（Java 计算）
+            int newStock = currentStock - amount;
+
+            // 4. 写回 Redis（Java 写，不加任何判断，直接覆盖）
+            stringRedisTemplate.opsForValue().set(key, String.valueOf(newStock));
+
+            log.info("不安全扣减成功: key={}, newStock={}", key, newStock);
+            return Result.success("不安全扣减成功，当前余量：" + newStock);
+        } else {
+            return Result.fail("库存不足");
+        }
+    }
 }
