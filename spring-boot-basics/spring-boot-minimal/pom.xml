@@ -15,7 +15,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <mysql.connector.version>8.0.33</mysql.connector.version>
         <mybatis.plus.version>3.5.3.1</mybatis.plus.version>
-        <springdoc.version>1.7.0</springdoc.version>
+        <knife4j.version>4.4.0</knife4j.version>
     </properties>
 
     <parent>
@@ -46,11 +46,11 @@
             <version>${mybatis.plus.version}</version>
         </dependency>
 
-        <!-- SpringDoc OpenAPI 依赖 -->
+        <!-- Knife4j OpenAPI3 依赖 -->
         <dependency>
-            <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-ui</artifactId>
-            <version>${springdoc.version}</version>
+            <groupId>com.github.xiaoymin</groupId>
+            <artifactId>knife4j-openapi3-spring-boot-starter</artifactId>
+            <version>${knife4j.version}</version>
         </dependency>
 
         <!-- Lombok 依赖 -->
