@@ -1,6 +1,8 @@
 package com.spring.minimal.module.customer.dto;
 
 import com.spring.minimal.common.model.req.BasePageReq;
+import com.spring.minimal.common.validation.EnumValue;
+import com.spring.minimal.module.customer.enums.business.CustomerStatusEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -8,7 +10,7 @@ import lombok.EqualsAndHashCode;
 /**
  * 客户分页查询对象
  *
- * @author spring-minimal
+ * @author qujianlei
  * @since 1.0.0
  */
 @Data
@@ -20,5 +22,6 @@ public class CustomerPageQuery extends BasePageReq {
     private String name;
 
     @Schema(description = "客户状态")
+    @EnumValue(enumClass = CustomerStatusEnum.class, message = "客户状态不合法")
     private Integer status;
 }

@@ -13,4 +13,10 @@ public interface BaseEnum {
      * @return 编码
      */
     Integer getCode();
+
+    /**
+     * 获取枚举描述
+     * @return 描述
+     */
+    String getDesc();
 }

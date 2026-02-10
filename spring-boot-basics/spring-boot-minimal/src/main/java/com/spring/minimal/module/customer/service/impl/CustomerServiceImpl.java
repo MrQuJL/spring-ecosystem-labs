@@ -1,5 +1,6 @@
 package com.spring.minimal.module.customer.service.impl;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -11,13 +12,13 @@ import com.spring.minimal.module.customer.enums.business.CustomerStatusEnum;
 import com.spring.minimal.module.customer.mapper.CustomerMapper;
 import com.spring.minimal.module.customer.service.ICustomerService;
 import com.spring.minimal.module.customer.vo.CustomerVO;
-import org.springframework.beans.BeanUtils;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * 客户服务实现类
@@ -25,14 +26,17 @@ import java.util.stream.Collectors;
  * @author qujianlei
  * @since 1.0.0
  */
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class CustomerServiceImpl extends ServiceImpl<CustomerMapper, Customer> implements ICustomerService {
+
+    private final ModelMapper modelMapper;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean addCustomer(CustomerDTO customerDTO) {
-        Customer customer = new Customer();
-        BeanUtils.copyProperties(customerDTO, customer);
+        Customer customer = modelMapper.map(customerDTO, Customer.class);
         
         // 强制初始化逻辑
         customer.setBalance(BigDecimal.ZERO); // 初始余额为0
@@ -50,7 +54,7 @@ public class CustomerServiceImpl extends ServiceImpl<CustomerMapper, Customer> i
         }
         
         // 只更新允许修改的字段
-        customer.setName(customerDTO.getName());
+        modelMapper.map(customerDTO, customer);
         
         // 注意：这里显式忽略了 balance 和 status 的更新，确保安全
         
@@ -82,26 +86,16 @@ public class CustomerServiceImpl extends ServiceImpl<CustomerMapper, Customer> i
     }
 
     @Override
-    public Page<CustomerVO> pageList(CustomerPageQuery query) {
+    public IPage<CustomerVO> pageList(CustomerPageQuery query) {
         // 1. 构建分页对象
         Page<Customer> page = new Page<>(query.getPage(), query.getSize());
         
-        // 2. 执行查询 (返回的是 PO)
-        this.lambdaQuery()
+        // 2. 执行查询并转换 (PO -> VO)
+        return this.lambdaQuery()
                 .like(StringUtils.isNotBlank(query.getName()), Customer::getName, query.getName())
                 .eq(query.getStatus() != null, Customer::getStatus, query.getStatus())
                 .orderByDesc(Customer::getId)
-                .page(page);
-
-        // 3. 转换: PO -> VO
-        List<CustomerVO> voList = page.getRecords().stream()
-                .map(CustomerVO::fromCustomer)
-                .collect(Collectors.toList());
-
-        // 4. 构建新的 Page<VO>
-        Page<CustomerVO> voPage = new Page<>(page.getCurrent(), page.getSize(), page.getTotal());
-        voPage.setRecords(voList);
-
-        return voPage;
+                .page(page)
+                .convert(customer -> modelMapper.map(customer, CustomerVO.class));
     }
 }

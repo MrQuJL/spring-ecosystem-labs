@@ -1,6 +1,6 @@
 package com.spring.minimal.module.customer.controller;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.spring.minimal.common.result.Result;
 import com.spring.minimal.common.validation.AddGroup;
 import com.spring.minimal.common.validation.UpdateGroup;
@@ -84,7 +84,7 @@ public class CustomerController {
      */
     @Operation(summary = "分页查询客户")
     @GetMapping("/list")
-    public Result<Page<CustomerVO>> list(@ParameterObject @Valid CustomerPageQuery query) {
+    public Result<IPage<CustomerVO>> list(@ParameterObject @Valid CustomerPageQuery query) {
         return Result.success(customerService.pageList(query));
     }
 

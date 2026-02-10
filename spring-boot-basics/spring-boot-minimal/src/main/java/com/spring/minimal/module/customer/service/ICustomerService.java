@@ -1,6 +1,6 @@
 package com.spring.minimal.module.customer.service;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.spring.minimal.module.customer.dto.CustomerDTO;
 import com.spring.minimal.module.customer.dto.CustomerPageQuery;
@@ -46,5 +46,5 @@ public interface ICustomerService extends IService<Customer> {
      * @param query 查询条件
      * @return 分页结果(VO)
      */
-    Page<CustomerVO> pageList(CustomerPageQuery query);
+    IPage<CustomerVO> pageList(CustomerPageQuery query);
 }
