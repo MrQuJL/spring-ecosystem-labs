@@ -5,6 +5,9 @@ import lombok.Data;
 
 import javax.validation.constraints.NotNull;
 
+import com.spring.minimal.common.validation.EnumValue;
+import com.spring.minimal.module.customer.enums.business.CustomerStatusEnum;
+
 /**
  * 客户状态更新请求对象
  * <p>企业级开发规范：
@@ -24,7 +27,8 @@ public class CustomerStatusReq {
     @NotNull(message = "客户ID不能为空")
     private Long id;
 
-    @Schema(description = "目标状态", requiredMode = Schema.RequiredMode.REQUIRED, example = "1")
-    @NotNull(message = "状态码不能为空")
+    @Schema(description = "客户状态", requiredMode = Schema.RequiredMode.REQUIRED)
+    @NotNull(message = "客户状态码不能为空")
+    @EnumValue(enumClass = CustomerStatusEnum.class, message = "客户状态不合法")
     private Integer status;
 }
