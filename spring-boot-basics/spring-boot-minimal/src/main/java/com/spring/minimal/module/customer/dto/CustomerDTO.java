@@ -31,6 +31,6 @@ public class CustomerDTO {
      * 客户名称
      */
     @Schema(description = "客户名称", requiredMode = Schema.RequiredMode.REQUIRED, example = "张三")
-    @NotNull(message = "客户名称不能为空", groups = {AddGroup.class, UpdateGroup.class})
+    @NotNull(message = "客户名称不能为空")
     private String name;
 }
