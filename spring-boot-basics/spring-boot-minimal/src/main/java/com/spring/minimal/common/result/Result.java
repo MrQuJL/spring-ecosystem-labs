@@ -1,6 +1,6 @@
 package com.spring.minimal.common.result;
 
-import com.spring.minimal.common.enums.response.IResponseEnum;
+import com.spring.minimal.common.enums.response.IResponse;
 import com.spring.minimal.common.enums.response.ResponseEnum;
 
 import lombok.Getter;
@@ -32,6 +32,7 @@ public class Result<T> {
 
     /**
      * 构造方法
+     * 
      * @param code 状态码
      * @param message 描述信息
      * @param data 响应数据
@@ -44,6 +45,7 @@ public class Result<T> {
 
     /**
      * 成功响应
+     * 
      * @param <T> 数据类型
      * @return Result<T>
      */
@@ -53,6 +55,7 @@ public class Result<T> {
 
     /**
      * 成功响应，带数据
+     * 
      * @param data 响应数据
      * @param <T> 数据类型
      * @return Result<T>
@@ -63,6 +66,7 @@ public class Result<T> {
 
     /**
      * 成功响应，自定义消息
+     * 
      * @param message 描述信息
      * @param <T> 数据类型
      * @return Result<T>
@@ -73,6 +77,7 @@ public class Result<T> {
 
     /**
      * 成功响应，自定义消息和数据
+     * 
      * @param message 描述信息
      * @param data 响应数据
      * @param <T> 数据类型
@@ -84,6 +89,7 @@ public class Result<T> {
 
     /**
      * 失败响应
+     * 
      * @param code 状态码
      * @param message 错误信息
      * @param <T> 数据类型
@@ -95,6 +101,7 @@ public class Result<T> {
 
     /**
      * 失败响应，默认状态码
+     * 
      * @param message 错误信息
      * @param <T> 数据类型
      * @return Result<T>
@@ -105,22 +112,24 @@ public class Result<T> {
 
     /**
      * 从 IResponse 接口构造失败响应
+     * 
      * @param response 响应对象，支持任何实现了 IResponse 接口的枚举
      * @param <T> 数据类型
      * @return Result<T>
      */
-    public static <T> Result<T> fail(IResponseEnum response) {
+    public static <T> Result<T> fail(IResponse response) {
         return new Result<>(response.getCode(), response.getMessage(), null);
     }
 
     /**
      * 从 IResponse 接口构造失败响应，自定义消息
+     * 
      * @param response 响应对象，支持任何实现了 IResponse 接口的枚举
      * @param message 自定义错误信息
      * @param <T> 数据类型
      * @return Result<T>
      */
-    public static <T> Result<T> fail(IResponseEnum response, String message) {
+    public static <T> Result<T> fail(IResponse response, String message) {
         return new Result<>(response.getCode(), message, null);
     }
 }

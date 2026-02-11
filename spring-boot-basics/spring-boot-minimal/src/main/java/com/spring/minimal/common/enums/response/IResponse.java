@@ -6,7 +6,7 @@ package com.spring.minimal.common.enums.response;
  * @author qujianlei
  * @since 1.0.0
  */
-public interface IResponseEnum {
+public interface IResponse {
     
     /**
      * 获取状态码
