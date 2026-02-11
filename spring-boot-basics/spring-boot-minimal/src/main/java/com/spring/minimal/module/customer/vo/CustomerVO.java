@@ -26,8 +26,8 @@ public class CustomerVO {
     @Schema(description = "账户余额", example = "100.00")
     private BigDecimal balance;
 
-    @Schema(description = "状态: 0-冻结, 1-正常", example = "1")
-    private String status;
+    @Schema(description = "状态: 0-冻结, 1-正常", example = "正常")
+    private String statusDesc;
 
     @Schema(description = "创建时间", example = "2023-10-27 10:00:00")
     private LocalDateTime createdAt;

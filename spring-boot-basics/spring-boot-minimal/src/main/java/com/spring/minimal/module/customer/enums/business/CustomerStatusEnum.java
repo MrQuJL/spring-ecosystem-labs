@@ -16,8 +16,7 @@ import lombok.Getter;
 public enum CustomerStatusEnum implements BaseEnum {
 
     FROZEN(0, "冻结"),
-    NORMAL(1, "正常"),
-    TEST(2, "测试");
+    NORMAL(1, "正常");
 
     private final Integer code;
     private final String desc;

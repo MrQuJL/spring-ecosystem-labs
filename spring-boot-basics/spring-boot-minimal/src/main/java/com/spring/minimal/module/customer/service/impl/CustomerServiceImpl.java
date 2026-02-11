@@ -88,14 +88,22 @@ public class CustomerServiceImpl extends ServiceImpl<CustomerMapper, Customer> i
     @Override
     public IPage<CustomerVO> pageList(CustomerPageQuery query) {
         // 1. 构建分页对象
-        Page<Customer> page = new Page<>(query.getPage(), query.getSize());
+        Page<Customer> pageParam = new Page<>(query.getPage(), query.getSize());
         
         // 2. 执行查询并转换 (PO -> VO)
-        return this.lambdaQuery()
+        IPage<Customer> customerPage = this.lambdaQuery()
                 .like(StringUtils.isNotBlank(query.getName()), Customer::getName, query.getName())
                 .eq(query.getStatus() != null, Customer::getStatus, query.getStatus())
                 .orderByDesc(Customer::getId)
-                .page(page)
-                .convert(customer -> modelMapper.map(customer, CustomerVO.class));
+                .page(pageParam);
+        
+        // 3. 转换状态描述
+        IPage<CustomerVO> customerVOPage = customerPage.convert(customer -> {
+            CustomerVO customerVO = modelMapper.map(customer, CustomerVO.class);
+            customerVO.setStatusDesc(CustomerStatusEnum.getByCode(customer.getStatus()).getDesc());
+            return customerVO;
+        });
+        
+        return customerVOPage;
     }
 }
