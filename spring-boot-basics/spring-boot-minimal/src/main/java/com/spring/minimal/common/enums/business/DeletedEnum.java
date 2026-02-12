@@ -1,6 +1,5 @@
 package com.spring.minimal.common.enums.business;
 
-import com.spring.minimal.common.utils.EnumUtil;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -20,15 +19,4 @@ public enum DeletedEnum implements BaseEnum {
 
     private final Integer code;
     private final String desc;
-
-    /**
-     * 根据状态码获取枚举
-     * <p>严厉模式：如果 code 不存在，返回 null，由调用方处理异常</p>
-     *
-     * @param code 状态码
-     * @return DeletedEnum 或 null
-     */
-    public static DeletedEnum getByCode(Integer code) {
-        return EnumUtil.getByCode(DeletedEnum.class, code);
-    }
 }
