@@ -41,6 +41,14 @@ public interface ICustomerService extends IService<Customer> {
     boolean updateStatus(CustomerStatusReq req);
 
     /**
+     * 获取客户详情
+     *
+     * @param id 客户ID
+     * @return 客户详情(VO)
+     */
+    CustomerVO getCustomer(Long id);
+
+    /**
      * 分页查询客户
      *
      * @param query 查询条件

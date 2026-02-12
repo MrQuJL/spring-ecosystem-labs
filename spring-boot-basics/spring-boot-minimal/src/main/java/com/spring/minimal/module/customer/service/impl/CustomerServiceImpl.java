@@ -11,6 +11,9 @@ import com.spring.minimal.module.customer.entity.Customer;
 import com.spring.minimal.module.customer.enums.business.CustomerStatusEnum;
 import com.spring.minimal.module.customer.mapper.CustomerMapper;
 import com.spring.minimal.module.customer.service.ICustomerService;
+import com.spring.minimal.common.enums.business.BaseEnum;
+import com.spring.minimal.common.exception.BusinessException;
+import com.spring.minimal.module.customer.enums.response.CustomerResponseEnum;
 import com.spring.minimal.module.customer.vo.CustomerVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +40,15 @@ public class CustomerServiceImpl extends ServiceImpl<CustomerMapper, Customer> i
     @Transactional(rollbackFor = Exception.class)
     public boolean addCustomer(CustomerDTO customerDTO) {
         Customer customer = modelMapper.map(customerDTO, Customer.class);
-        
+        // 校验客户名称不能重复
+        long count = this.lambdaQuery()
+                .eq(Customer::getName, customerDTO.getName())
+                .count();
+        if (count > 0) {
+            throw new BusinessException(CustomerResponseEnum.CUSTOMER_NAME_EXIST,
+                String.format(CustomerResponseEnum.CUSTOMER_NAME_EXIST.getMessage(), customerDTO.getName()));
+        }
+
         // 强制初始化逻辑
         customer.setBalance(BigDecimal.ZERO); // 初始余额为0
         customer.setStatus(CustomerStatusEnum.NORMAL.getCode()); // 初始状态为正常
@@ -50,7 +61,18 @@ public class CustomerServiceImpl extends ServiceImpl<CustomerMapper, Customer> i
     public boolean updateCustomer(CustomerDTO customerDTO) {
         Customer customer = this.getById(customerDTO.getId());
         if (customer == null) {
-            throw new RuntimeException("客户不存在");
+            throw new BusinessException(CustomerResponseEnum.CUSTOMER_NOT_EXIST,
+                    String.format(CustomerResponseEnum.CUSTOMER_NOT_EXIST.getMessage(), customerDTO.getId()));
+        }
+
+        // 校验客户名称不能重复
+        long count = this.lambdaQuery()
+                .eq(Customer::getName, customerDTO.getName())
+                .ne(Customer::getId, customerDTO.getId())
+                .count();
+        if (count > 0) {
+            throw new BusinessException(CustomerResponseEnum.CUSTOMER_NAME_EXIST,
+                String.format(CustomerResponseEnum.CUSTOMER_NAME_EXIST.getMessage(), customerDTO.getName()));
         }
         
         // 只更新允许修改的字段
@@ -65,24 +87,35 @@ public class CustomerServiceImpl extends ServiceImpl<CustomerMapper, Customer> i
     @Transactional(rollbackFor = Exception.class)
     public boolean updateStatus(CustomerStatusReq req) {
         // 校验状态值是否有效
-        boolean isValidStatus = false;
-        for (CustomerStatusEnum value : CustomerStatusEnum.values()) {
-            if (value.getCode().equals(req.getStatus())) {
-                isValidStatus = true;
-                break;
-            }
-        }
+        boolean isValidStatus = BaseEnum.isValidCode(CustomerStatusEnum.class, req.getStatus());
         if (!isValidStatus) {
-            throw new IllegalArgumentException("无效的状态码: " + req.getStatus());
+            throw new BusinessException(CustomerResponseEnum.STATUS_INVALID, 
+                String.format(CustomerResponseEnum.STATUS_INVALID.getMessage(), req.getStatus()));
         }
 
         Customer customer = this.getById(req.getId());
         if (customer == null) {
-            throw new RuntimeException("客户不存在");
+            throw new BusinessException(CustomerResponseEnum.CUSTOMER_NOT_EXIST,
+                String.format(CustomerResponseEnum.CUSTOMER_NOT_EXIST.getMessage(), req.getId()));
         }
 
         customer.setStatus(req.getStatus());
         return this.updateById(customer);
+    }
+
+    @Override
+    public CustomerVO getCustomer(Long id) {
+        Customer customer = this.getById(id);
+        if (customer == null) {
+            throw new BusinessException(CustomerResponseEnum.CUSTOMER_NOT_EXIST,
+                String.format(CustomerResponseEnum.CUSTOMER_NOT_EXIST.getMessage(), id));
+        }
+        CustomerVO customerVO = modelMapper.map(customer, CustomerVO.class);
+        // 转换状态描述
+        String statusDesc = BaseEnum.getByCode(CustomerStatusEnum.class, customer.getStatus()).getDesc();
+        customerVO.setStatusDesc(statusDesc);
+
+        return customerVO;
     }
 
     @Override
@@ -100,7 +133,8 @@ public class CustomerServiceImpl extends ServiceImpl<CustomerMapper, Customer> i
         // 3. 转换状态描述
         IPage<CustomerVO> customerVOPage = customerPage.convert(customer -> {
             CustomerVO customerVO = modelMapper.map(customer, CustomerVO.class);
-            customerVO.setStatusDesc(CustomerStatusEnum.getByCode(customer.getStatus()).getDesc());
+            String statusDesc = BaseEnum.getByCode(CustomerStatusEnum.class, customer.getStatus()).getDesc();
+            customerVO.setStatusDesc(statusDesc);
             return customerVO;
         });
         

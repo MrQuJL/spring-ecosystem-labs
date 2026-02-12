@@ -64,6 +64,18 @@ public class CustomerController {
     }
 
     /**
+     * 更新客户状态
+     *
+     * @param req 状态更新请求
+     * @return 是否成功
+     */
+    @Operation(summary = "更新客户状态")
+    @PostMapping("/updateStatus")
+    public Result<Boolean> updateStatus(@Valid @RequestBody CustomerStatusReq req) {
+        return Result.success(customerService.updateStatus(req));
+    }
+
+    /**
      * 获取客户详情
      *
      * @param id 客户ID
@@ -71,9 +83,9 @@ public class CustomerController {
      */
     @Operation(summary = "获取客户详情")
     @GetMapping("/detail")
-    public Result<Object> getCustomer(@Parameter(description = "客户ID", required = true)
-                                      @NotNull(message = "客户ID不能为空") @RequestParam Long id) {
-        return Result.success(customerService.getById(id));
+    public Result<CustomerVO> getCustomer(@Parameter(description = "客户ID", required = true, example = "1")
+                                          @NotNull(message = "客户ID不能为空") @RequestParam Long id) {
+        return Result.success(customerService.getCustomer(id));
     }
 
     /**
@@ -86,17 +98,5 @@ public class CustomerController {
     @GetMapping("/list")
     public Result<IPage<CustomerVO>> list(@ParameterObject @Valid CustomerPageQuery query) {
         return Result.success(customerService.pageList(query));
-    }
-
-    /**
-     * 更新客户状态
-     *
-     * @param req 状态更新请求
-     * @return 是否成功
-     */
-    @Operation(summary = "更新客户状态")
-    @PostMapping("/updateStatus")
-    public Result<Boolean> updateStatus(@Valid @RequestBody CustomerStatusReq req) {
-        return Result.success(customerService.updateStatus(req));
     }
 }
