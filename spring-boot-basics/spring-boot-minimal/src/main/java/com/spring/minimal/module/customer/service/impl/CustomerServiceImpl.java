@@ -104,6 +104,17 @@ public class CustomerServiceImpl extends ServiceImpl<CustomerMapper, Customer> i
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean deleteCustomer(Long id) {
+        Customer customer = this.getById(id);
+        if (customer == null) {
+            throw new BusinessException(CustomerResponseEnum.CUSTOMER_NOT_EXIST,
+                String.format(CustomerResponseEnum.CUSTOMER_NOT_EXIST.getMessage(), id));
+        }
+        return this.removeById(id);
+    }
+
+    @Override
     public CustomerVO getCustomer(Long id) {
         Customer customer = this.getById(id);
         if (customer == null) {

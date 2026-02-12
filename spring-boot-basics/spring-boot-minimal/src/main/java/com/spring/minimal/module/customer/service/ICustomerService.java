@@ -41,6 +41,14 @@ public interface ICustomerService extends IService<Customer> {
     boolean updateStatus(CustomerStatusReq req);
 
     /**
+     * 删除客户
+     *
+     * @param id 客户ID
+     * @return 是否成功
+     */
+    boolean deleteCustomer(Long id);
+
+    /**
      * 获取客户详情
      *
      * @param id 客户ID

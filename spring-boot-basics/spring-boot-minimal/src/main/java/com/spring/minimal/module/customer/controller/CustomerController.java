@@ -76,6 +76,19 @@ public class CustomerController {
     }
 
     /**
+     * 删除客户
+     *
+     * @param id 客户ID
+     * @return 是否成功
+     */
+    @Operation(summary = "删除客户")
+    @PostMapping("/delete")
+    public Result<Boolean> deleteCustomer(@Parameter(description = "客户ID", required = true, example = "1")
+                                          @NotNull(message = "客户ID不能为空") @RequestParam Long id) {
+        return Result.success(customerService.deleteCustomer(id));
+    }
+
+    /**
      * 获取客户详情
      *
      * @param id 客户ID
