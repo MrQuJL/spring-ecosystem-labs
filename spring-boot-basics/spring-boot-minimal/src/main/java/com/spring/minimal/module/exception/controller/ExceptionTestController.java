@@ -1,4 +1,4 @@
-package com.spring.minimal.module.customer.controller;
+package com.spring.minimal.module.exception.controller;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
