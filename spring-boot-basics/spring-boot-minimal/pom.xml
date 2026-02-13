@@ -23,6 +23,7 @@
         <mysql.connector.version>8.0.33</mysql.connector.version>
         <mybatis.plus.version>3.5.3.1</mybatis.plus.version>
         <modelmapper.version>3.1.1</modelmapper.version>
+        <easyexcel.version>3.3.2</easyexcel.version>
         <knife4j.version>4.4.0</knife4j.version>
     </properties>
 
@@ -64,6 +65,13 @@
             <groupId>org.modelmapper</groupId>
             <artifactId>modelmapper</artifactId>
             <version>${modelmapper.version}</version>
+        </dependency>
+
+        <!-- EasyExcel 依赖 -->
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>easyexcel</artifactId>
+            <version>${easyexcel.version}</version>
         </dependency>
 
         <!-- Knife4j OpenAPI3 依赖 -->

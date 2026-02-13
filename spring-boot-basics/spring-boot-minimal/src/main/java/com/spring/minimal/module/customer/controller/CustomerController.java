@@ -17,7 +17,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
@@ -111,5 +113,36 @@ public class CustomerController {
     @GetMapping("/list")
     public Result<IPage<CustomerVO>> list(@ParameterObject @Valid CustomerPageQuery query) {
         return Result.success(customerService.pageList(query));
+    }
+
+    /**
+     * 导出客户数据
+     *
+     * @param response 响应对象
+     * @param status   客户状态
+     */
+    @Operation(summary = "导出客户数据")
+    @GetMapping("/export")
+    public void export(HttpServletResponse response,
+                       @Parameter(description = "客户状态", required = false, example = "1")
+                       @RequestParam(required = false) Integer status) {
+        customerService.exportCustomer(response, status);
+    }
+
+    /**
+     * 导入客户数据
+     *
+     * @param file          Excel文件
+     * @param operatorName  操作人名称
+     * @param operatorId    操作人ID
+     * @return 是否成功
+     */
+    @Operation(summary = "导入客户数据")
+    @PostMapping(value = "/import", consumes = "multipart/form-data")
+    public Result<Boolean> importCustomer(@Parameter(description = "Excel文件", required = true) @RequestPart("file") MultipartFile file,
+                                          @Parameter(description = "操作人名称", required = true, example = "张三") @RequestParam String operatorName,
+                                          @Parameter(description = "操作人ID", required = true, example = "1") @RequestParam Long operatorId) {
+        customerService.importCustomer(file, operatorName, operatorId);
+        return Result.success(true);
     }
 }

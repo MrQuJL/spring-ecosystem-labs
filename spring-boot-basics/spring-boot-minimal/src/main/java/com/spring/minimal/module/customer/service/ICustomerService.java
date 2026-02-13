@@ -8,6 +8,10 @@ import com.spring.minimal.module.customer.dto.CustomerStatusReq;
 import com.spring.minimal.module.customer.entity.Customer;
 import com.spring.minimal.module.customer.vo.CustomerVO;
 
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.servlet.http.HttpServletResponse;
+
 /**
  * 客户服务接口
  *
@@ -63,4 +67,21 @@ public interface ICustomerService extends IService<Customer> {
      * @return 分页结果(VO)
      */
     IPage<CustomerVO> pageList(CustomerPageQuery query);
+    
+    /**
+     * 导出客户数据
+     *
+     * @param response 响应对象
+     * @param status   客户状态
+     */
+    void exportCustomer(HttpServletResponse response, Integer status);
+
+    /**
+     * 导入客户数据
+     *
+     * @param file          Excel文件
+     * @param operatorName  操作人名称
+     * @param operatorId    操作人ID
+     */
+    void importCustomer(MultipartFile file, String operatorName, Long operatorId);
 }

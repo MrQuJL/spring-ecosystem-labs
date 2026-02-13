@@ -12,6 +12,7 @@ import com.spring.minimal.module.customer.enums.business.CustomerStatusEnum;
 import com.spring.minimal.module.customer.mapper.CustomerMapper;
 import com.spring.minimal.module.customer.service.ICustomerService;
 import com.spring.minimal.common.enums.business.BaseEnum;
+import com.spring.minimal.common.enums.response.ResponseEnum;
 import com.spring.minimal.common.exception.BusinessException;
 import com.spring.minimal.module.customer.enums.response.CustomerResponseEnum;
 import com.spring.minimal.module.customer.vo.CustomerVO;
@@ -22,6 +23,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+
+import com.spring.minimal.common.utils.ExcelUtil;
+import com.spring.minimal.module.customer.vo.CustomerExcelVO;
+import com.spring.minimal.module.customer.vo.CustomerImportVO;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 客户服务实现类
@@ -150,5 +161,44 @@ public class CustomerServiceImpl extends ServiceImpl<CustomerMapper, Customer> i
         });
         
         return customerVOPage;
+    }
+
+    @Override
+    public void exportCustomer(HttpServletResponse response, Integer status) {
+        // 1. 查询数据
+        List<Customer> customerList = this.lambdaQuery()
+                .eq(status != null, Customer::getStatus, status)
+                .orderByDesc(Customer::getId)
+                .list();
+
+        // 2. 转换数据 (PO -> ExcelVO)
+        List<CustomerExcelVO> excelData = customerList.stream().map(customer -> {
+            CustomerExcelVO excelVO = modelMapper.map(customer, CustomerExcelVO.class);
+            String statusDesc = BaseEnum.getByCode(CustomerStatusEnum.class, customer.getStatus()).getDesc();
+            excelVO.setStatusDesc(statusDesc);
+            return excelVO;
+        }).collect(Collectors.toList());
+
+        // 3. 导出
+        ExcelUtil.write(response, "客户列表", "客户数据", CustomerExcelVO.class, excelData);
+    }
+
+    @Override
+    public void importCustomer(MultipartFile file, String operatorName, Long operatorId) {
+        try {
+            ExcelUtil.read(file.getInputStream(), CustomerImportVO.class, list -> {
+                // 仅打印数据
+                log.info("================== 开始导入 ==================");
+                log.info("操作人: {}, ID: {}", operatorName, operatorId);
+                log.info("导入数据量: {}", list.size());
+                list.forEach(item -> log.info("导入数据: {}", item));
+                log.info("================== 结束导入 ==================");
+            });
+            // List<CustomerImportVO> importData = ExcelUtil.readSync(file.getInputStream(), CustomerImportVO.class);
+            // System.out.println(importData);
+        } catch (IOException e) {
+            log.error("导入失败", e);
+            throw new BusinessException(ResponseEnum.SYSTEM_ERROR, "导入文件读取失败");
+        }
     }
 }
