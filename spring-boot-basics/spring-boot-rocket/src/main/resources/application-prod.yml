@@ -1,0 +1,28 @@
+# 生产环境配置
+spring:
+  # 数据源配置
+  datasource:
+    url: jdbc:mysql://49.233.1.153:3306/spring_labs?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
+    username: root
+    password: 123456
+
+  # Redis 配置
+  redis:
+    host: 49.233.1.153
+    port: 6379
+    password: YourStrongPassword123
+
+# RocketMQ 配置
+rocketmq:
+  name-server: 49.233.1.153:9876
+  producer:
+    group: rocket-producer-group
+
+# 日志配置
+logging:
+  level:
+    '[com.spring.rocket]': info
+  file:
+    name: logs/spring-boot-rocket.log
+    max-size: 10MB
+    max-history: 30
