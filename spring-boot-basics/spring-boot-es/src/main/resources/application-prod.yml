@@ -1,0 +1,23 @@
+# 生产环境配置
+spring:
+  # Redis 配置
+  redis:
+    host: 49.233.1.153
+    port: 6379
+    password: YourStrongPassword123
+
+  # Elasticsearch 配置
+  elasticsearch:
+    uris: http://49.233.1.153:9200
+    username: elastic
+    password: 123456
+
+
+# 日志配置
+logging:
+  level:
+    '[com.spring.es]': info
+  file:
+    name: logs/spring-boot-es.log
+    max-size: 10MB
+    max-history: 30
