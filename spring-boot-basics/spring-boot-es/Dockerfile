@@ -1,5 +1,5 @@
 # 使用官方的基础镜像，这个镜像包含了运行 Java 程序所需的环境
-FROM openjdk:8-jre-alpine
+FROM openjdk:17-jre-alpine
 
 # 在容器内创建一个目录，作为应用的家目录
 WORKDIR /app
