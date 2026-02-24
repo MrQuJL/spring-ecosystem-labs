@@ -1,4 +1,4 @@
-package com.spring.es.module.exception.controller;
+package com.spring.elastic.module.exception.controller;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -7,9 +7,9 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import com.spring.es.common.enums.response.ResponseEnum;
-import com.spring.es.common.exception.BusinessException;
-import com.spring.es.common.result.Result;
+import com.spring.elastic.common.enums.response.ResponseEnum;
+import com.spring.elastic.common.exception.BusinessException;
+import com.spring.elastic.common.result.Result;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

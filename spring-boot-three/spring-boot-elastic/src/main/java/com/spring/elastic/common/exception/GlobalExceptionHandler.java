@@ -1,4 +1,4 @@
-package com.spring.es.common.exception;
+package com.spring.elastic.common.exception;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.BindException;
@@ -7,8 +7,8 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import com.spring.es.common.enums.response.ResponseEnum;
-import com.spring.es.common.result.Result;
+import com.spring.elastic.common.enums.response.ResponseEnum;
+import com.spring.elastic.common.result.Result;
 
 import jakarta.validation.ConstraintViolationException;
 

@@ -1,4 +1,4 @@
-package com.spring.es.common.validation;
+package com.spring.elastic.common.validation;
 
 import jakarta.validation.groups.Default;
 

@@ -1,4 +1,4 @@
-package com.spring.es.common.utils;
+package com.spring.elastic.common.utils;
 
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.context.AnalysisContext;
@@ -16,7 +16,7 @@ import java.util.function.Consumer;
 
 /**
  * Excel 工具类
- * <p>基于 EasyExcel 封装，提供简单的导入导出功能</p>
+ * <p>基于 EasyExcel 封装，提供导入导出功能</p>
  *
  * @author qujianlei
  * @since 1.0.0
