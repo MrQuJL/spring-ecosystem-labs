@@ -12,7 +12,7 @@ import java.time.format.DateTimeFormatter;
 /**
  * Spring MVC 配置类
  *
- * @author spring-minimal
+ * @author qujianlei
  * @since 1.0.0
  */
 @Configuration

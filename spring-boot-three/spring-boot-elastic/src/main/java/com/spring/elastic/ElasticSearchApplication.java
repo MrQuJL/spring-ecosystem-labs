@@ -1,5 +1,6 @@
 package com.spring.elastic;
 
+import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -11,6 +12,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * @since 1.0.0
  */
 @SpringBootApplication
+@MapperScan("com.spring.elastic.module.*.mapper")
 public class ElasticSearchApplication {
 
     public static void main(String[] args) {
