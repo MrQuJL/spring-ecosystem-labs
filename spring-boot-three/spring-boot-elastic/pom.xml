@@ -26,6 +26,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <mysql.connector.version>8.0.33</mysql.connector.version>
         <mybatis.plus.version>3.5.6</mybatis.plus.version>
+        <mongo-plus.version>2.1.9</mongo-plus.version>
         <modelmapper.version>3.2.0</modelmapper.version>
         <easyexcel.version>3.3.2</easyexcel.version>
         <knife4j.version>4.4.0</knife4j.version>
@@ -74,6 +75,13 @@
             <groupId>com.baomidou</groupId>
             <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
             <version>${mybatis.plus.version}</version> 
+        </dependency>
+
+        <!-- MongoPlus 依赖 -->
+        <dependency>
+            <groupId>com.mongoplus</groupId>
+            <artifactId>mongo-plus-boot-starter</artifactId>
+            <version>${mongo-plus.version}</version>
         </dependency>
 
         <!-- ModelMapper 依赖 -->
