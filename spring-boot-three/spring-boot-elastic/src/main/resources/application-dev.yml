@@ -19,6 +19,25 @@ spring:
     username: elastic
     password: 123456
 
+# MongoDB 配置
+mongo-plus:
+  data:
+    mongodb:
+      host: 49.233.1.153
+      port: 27017
+      database: test
+      username: admin
+      password: 123456
+      authentication-database: admin
+  configuration:
+    logic:
+      open: true
+      auto-fill: true
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+      logic-data-type: Integer
+
 # 日志配置
 logging:
   level:
